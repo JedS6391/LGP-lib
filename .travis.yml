@@ -29,7 +29,8 @@ deploy:
   provider: releases
   api_key:
     secure: gDxUx/Gyq5gnuu/V6GC0ws2nPWHxQn1gc9x/Bnorbl1GfQm5CiewtJ6oZ4tNt5TLGCnA1VUOxmdNERZVAKJxQvLtfXEtUZmAdF+kS4VdFouzfEuA70POMPbbkZ1NQvDqplXvyR6Oan25neCDT+k3RgvjbmXAM65B7QjhTNrzTsdTn9JQT04GxMpklwz7rCCsnE1EBH5iGegbwTEtG2slQdo+6L3Yb1hk3y1JyMIv/TZIhQIceYVpKW98eblqNCinTS4sfGiOdKyMqO4dHU2wu84QLW6siJrCx33lpY5DbrtXHvPKUZGc00RsGwSjyhcKwK2+RnAPnpF/U/WyGOOQ1GxQCuI3VWruDerWIE/eUcnj322FdbhBO4cWWbL7vC6ai/8CnIkVBQSDDmD7j9YmGJA9lwTut17BIqGyfx2O1l3XnvDjVX9C422XbWOWTWr55GCav9CBNv2U5nLIJspeV53E8HXVkcNDvOaCcXhKmsY4T61JYkbMtYFsUyDKw8HG7toqpK40zzEA17EpwMbFS6dk/3ak9VLug0qlChCnU/kvQtK/9FbRM12LjaiLsJyM3FrtKJLJ3N9EVQeShCmGdYyecqw2wpG+TTmR7sKNSscRWfs5gSLS+6GFogJN/NUPuXg82CoInWmlzh6SVRuwwH9JXlAV2DHD8GwLVxfZsLk=
-  file: build/libs/LGP-lib-$TRAVIS_TAG-$(date +%Y-%m-%d).jar
+  file:
+    - build/libs/LGP-lib-$TRAVIS_TAG-$(date +%Y-%m-%d).jar
   skip_cleanup: true
   overwrite: true
   on:
