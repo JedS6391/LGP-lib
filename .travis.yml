@@ -11,32 +11,24 @@ matrix:
         - oracle-java8-set-default
 env:
   global:
-  # Because release builds work with tagged commits (which in our case will always be related to a branch),
-  # we need to attempt to fetch the real branch name for a tagged commit.
   - REAL_BRANCH=$(git ls-remote origin | sed -n "\|$TRAVIS_COMMIT\s\+refs/heads/|{s///p}")
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-  - $HOME/.gradle/caches/
-  - $HOME/.gradle/wrapper/
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
 before_install:
 - chmod -R ug+x .travis
 script:
 - chmod -R ug+x .travis
-- .travis/build.sh
+- ".travis/build.sh"
 before_deploy: bash .travis/deploy.sh $REAL_BRANCH $TRAVIS_TAG
 deploy:
-# Deployment of next release branch:
-#   - Renames binaries to include release version.
-#   - Deploys files to GitHub releases.
-#   - Only deploys when a tag is pushed to the current release branch.
-#
-# Note: When the next release branch changes, it will need to be changed here too.
-- provider: releases
+  provider: releases
   api_key:
-    secure: kODcZ0qyds33TRQVio0ZpDhxCh04/wXbSDnaYxYGTg+PRZ52PHuUO1cGpasGTWlMW2mxpmtY2zCfvlt8+YNf7qwTFsqSPbeMsaXkmybOunaib4eRsfdHSE5HzMK//WqCN9KDrxvItN/LqLwtxrSMbYdWnOpdmaUzgGusNwoMB7nY2xcZgTDCpO1o1zq2h95XGi0s/JqMNStziTegtVKQ1YshlNFwd9z5ytXNcfgxksuwSPl4smIX2sLZVQEWtupcNmQHfehJurBksYex1GvJfhii6DLi36m8gke1elnJDMXhppUKn1qUMmI/Hva6aHPqSX4q6yfMKP+qBN73fVhMVztv5uCAvH+r9Bl81W85gpN1aYPDfqjyqSgCy6UaOq0XdvBsZVqsQZpRX7/+U/Fz30B4+S16NCg/5eK6mSia4au8gqqmXFt3V5m7aT44vKNZXM+y6Fl5Nb/dI4MKV5Uv+2K1wS4db9fXNEgt3zYy8i+x5l2ig7jNPiJk/+rUwgIkt8g7RlHSDM/X1vGI2xgSdH/piGLARTWf6sw3r8zqMm3k8R77ajGy8bGyEvF4tsVflKQwLj/2x5rTHK8/l6arWfjcp5EpNuxkOgCpu135S8vQ7kEVmlMLqbjsRtwTvKSxDrZwFwhYUTphh3hDNtzXW9GAHv9GhJCbNghZS+gpAXM=
+    secure: gDxUx/Gyq5gnuu/V6GC0ws2nPWHxQn1gc9x/Bnorbl1GfQm5CiewtJ6oZ4tNt5TLGCnA1VUOxmdNERZVAKJxQvLtfXEtUZmAdF+kS4VdFouzfEuA70POMPbbkZ1NQvDqplXvyR6Oan25neCDT+k3RgvjbmXAM65B7QjhTNrzTsdTn9JQT04GxMpklwz7rCCsnE1EBH5iGegbwTEtG2slQdo+6L3Yb1hk3y1JyMIv/TZIhQIceYVpKW98eblqNCinTS4sfGiOdKyMqO4dHU2wu84QLW6siJrCx33lpY5DbrtXHvPKUZGc00RsGwSjyhcKwK2+RnAPnpF/U/WyGOOQ1GxQCuI3VWruDerWIE/eUcnj322FdbhBO4cWWbL7vC6ai/8CnIkVBQSDDmD7j9YmGJA9lwTut17BIqGyfx2O1l3XnvDjVX9C422XbWOWTWr55GCav9CBNv2U5nLIJspeV53E8HXVkcNDvOaCcXhKmsY4T61JYkbMtYFsUyDKw8HG7toqpK40zzEA17EpwMbFS6dk/3ak9VLug0qlChCnU/kvQtK/9FbRM12LjaiLsJyM3FrtKJLJ3N9EVQeShCmGdYyecqw2wpG+TTmR7sKNSscRWfs5gSLS+6GFogJN/NUPuXg82CoInWmlzh6SVRuwwH9JXlAV2DHD8GwLVxfZsLk=
   file:
     - build/libs/LGP-lib-$TRAVIS_TAG-$(date +%Y-%m-%d).jar
   skip_cleanup: true
