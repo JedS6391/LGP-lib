@@ -1,12 +1,14 @@
-# LGP
+# LGP-lib
 
 > *A library of implementations for core LGP framework components.*
 
 [![license][license-image]][license-url]
+[![travis][travis-image]][travis-url]
 
 ## About
 
-This package contains a set of implementations for core [LGP framework](https://github.com/JedS6391/LGP) components. These implementations were previously part of the main LGP framework but are now part of their own module.
+This package contains a set of implementations for core [LGP framework](https://github.com/JedS6391/LGP) components. 
+These implementations were previously part of the main LGP framework but are now part of their own module.
 
 ---
 
@@ -91,3 +93,5 @@ A program implementation that is made up of a sequence of instructions (generall
 
 [license-image]: https://img.shields.io/github/license/mashape/apistatus.svg?style=flat
 [license-url]: https://github.com/JedS6391/LGP/blob/master/LICENSE
+[travis-image]: https://travis-ci.org/JedS6391/LGP-lib.svg?branch=master
+[travis-url]: https://travis-ci.org/JedS6391/LGP-lib
