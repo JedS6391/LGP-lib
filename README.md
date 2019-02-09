@@ -7,7 +7,8 @@
 
 ## About
 
-This package contains a set of implementations for core [LGP framework](https://github.com/JedS6391/LGP) components. These implementations were previously part of the main LGP framework but are now part of their own module.
+This package contains a set of implementations for core [LGP framework](https://github.com/JedS6391/LGP) components. 
+These implementations were previously part of the main LGP framework but are now part of their own module.
 
 ---
 
