@@ -40,6 +40,13 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
+// Prints the current project version
+task printVersion {
+    doLast {
+        println project.version
+    }
+}
+
 // Signing and deployment
 apply plugin: 'maven'
 
