@@ -3,27 +3,27 @@ matrix:
   include:
   - os: linux
     sudo: false
-    jdk: oraclejdk8
-    addons:
-      apt:
-        packages:
-        - oracle-java8-installer
-        - oracle-java8-set-default
+
 env:
   global:
   - REAL_BRANCH=$(git ls-remote origin | sed -n "\|$TRAVIS_COMMIT\s\+refs/heads/|{s///p}")
+  - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 before_cache:
-- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
 before_install:
-- chmod -R ug+x .travis
+  - sudo add-apt-repository -y ppa:openjdk-r/ppa
+  - sudo apt-get -qq update
+  - sudo apt-get install -y openjdk-8-jdk --no-install-recommends
+  - sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
+  - chmod -R ug+x .travis
 script:
-- chmod -R ug+x .travis
-- ".travis/build.sh"
+  - chmod -R ug+x .travis
+  - ".travis/build.sh"
 before_deploy: bash .travis/deploy.sh $REAL_BRANCH $TRAVIS_TAG
 deploy:
   provider: releases

@@ -1,31 +1,30 @@
 package nz.co.jedsimson.lgp.lib.generators
 
-import nz.co.jedsimson.lgp.core.environment.Environment
+import nz.co.jedsimson.lgp.core.environment.EnvironmentFacade
+import nz.co.jedsimson.lgp.core.environment.choice
+import nz.co.jedsimson.lgp.core.environment.dataset.Target
+import nz.co.jedsimson.lgp.core.environment.randInt
 import nz.co.jedsimson.lgp.core.program.Program
 import nz.co.jedsimson.lgp.core.program.ProgramGenerator
-import nz.co.jedsimson.lgp.core.evolution.operators.choice
-import nz.co.jedsimson.lgp.core.evolution.operators.randInt
-import nz.co.jedsimson.lgp.core.program.registers.RegisterType
 import nz.co.jedsimson.lgp.core.modules.ModuleInformation
 import nz.co.jedsimson.lgp.core.program.Output
 import nz.co.jedsimson.lgp.core.program.instructions.*
-import nz.co.jedsimson.lgp.core.program.registers.RandomRegisterGenerator
-import nz.co.jedsimson.lgp.core.program.registers.RegisterSet
-import nz.co.jedsimson.lgp.core.program.registers.getRandomInputAndCalculationRegisters
+import nz.co.jedsimson.lgp.core.program.registers.*
 import nz.co.jedsimson.lgp.lib.base.BaseInstruction
 import nz.co.jedsimson.lgp.lib.base.BaseProgram
+import nz.co.jedsimson.lgp.lib.operations.BranchOperation
 
-internal class EffectiveProgramInstructionGenerator<TProgram, TOutput : Output<TProgram>> :
-    InstructionGenerator<TProgram, TOutput> {
+internal class EffectiveProgramInstructionGenerator<TProgram, TOutput : Output<TProgram>, TTarget : Target<TProgram>>(
+    environment: EnvironmentFacade<TProgram, TOutput, TTarget>
+) :
+    InstructionGenerator<TProgram, TOutput, TTarget>(environment) {
 
     private val random = this.environment.randomState
-    private val operationPool: List<Operation<TProgram>>
-    private val registers: RegisterSet<TProgram>
+    private val operationPool: List<Operation<TProgram>> = environment.operations
+    private val registers: RegisterSet<TProgram> = this.environment.registerSet.copy()
     private val registerGenerator: RandomRegisterGenerator<TProgram>
 
-    constructor(environment: Environment<TProgram, TOutput>) : super(environment) {
-        this.operationPool = environment.operations
-        this.registers = this.environment.registerSet.copy()
+    init {
         this.registerGenerator = RandomRegisterGenerator(this.environment.randomState, this.registers)
     }
 
@@ -99,9 +98,8 @@ internal class EffectiveProgramInstructionGenerator<TProgram, TOutput : Output<T
     )
 }
 
-
 /**
- * A ``ProgramGenerator`` implementation that provides effective ``BaseProgram`` instances.
+ * A [ProgramGenerator] implementation that provides effective [BaseProgram] instances.
  *
  * All programs generated will have an entirely effective set of instructions.
  *
@@ -109,17 +107,18 @@ internal class EffectiveProgramInstructionGenerator<TProgram, TOutput : Output<T
  * @property outputRegisterIndices A collection of indices that should be considered as the program output registers.
  * @property outputResolver A function that can be used to resolve the programs register contents to an [Output].
  */
-class EffectiveProgramGenerator<TProgram, TOutput : Output<TProgram>>(
-        environment: Environment<TProgram, TOutput>,
-        val sentinelTrueValue: TProgram,
-        val outputRegisterIndices: List<RegisterIndex>,
-        val outputResolver: (BaseProgram<TProgram, TOutput>) -> TOutput
-) : ProgramGenerator<TProgram, TOutput>(
+class EffectiveProgramGenerator<TProgram, TOutput : Output<TProgram>, TTarget : Target<TProgram>>(
+    environment: EnvironmentFacade<TProgram, TOutput, TTarget>,
+    private val sentinelTrueValue: TProgram,
+    private val outputRegisterIndices: List<RegisterIndex>,
+    private val outputResolver: (BaseProgram<TProgram, TOutput>) -> TOutput
+) : ProgramGenerator<TProgram, TOutput, TTarget>(
     environment,
     instructionGenerator = EffectiveProgramInstructionGenerator(environment)
 ) {
 
     private val random = this.environment.randomState
+    private val effectiveInstructionGenerator = this.instructionGenerator as EffectiveProgramInstructionGenerator<TProgram, TOutput, TTarget>
 
     override fun generateProgram(): Program<TProgram, TOutput> {
         val length = this.random.randInt(
@@ -135,9 +134,7 @@ class EffectiveProgramGenerator<TProgram, TOutput : Output<TProgram>>(
         val effectiveRegisters = mutableListOf(output)
 
         instructions.add(
-            (this.instructionGenerator as EffectiveProgramInstructionGenerator<TProgram, TOutput>).generateInstruction(
-                effectiveRegisters
-            )
+            this.effectiveInstructionGenerator.generateInstruction(effectiveRegisters)
         )
 
         // Construct effective instructions
@@ -169,7 +166,7 @@ class EffectiveProgramGenerator<TProgram, TOutput : Output<TProgram>>(
                 }
                 else -> {
                     // Get a random instruction and make it effective by using one of the registers marked as effective.
-                    val instr = this.instructionGenerator.generateInstruction(effectiveRegisters)
+                    val instr = this.effectiveInstructionGenerator.generateInstruction(effectiveRegisters)
 
                     instr.destination = random.choice(effectiveRegisters)
 
@@ -183,8 +180,8 @@ class EffectiveProgramGenerator<TProgram, TOutput : Output<TProgram>>(
 
         // Each program gets its own copy of the register set
         val program = BaseProgram(
-            instructions = instructions.toList(),
-            registerSet = this.environment.registerSet.copy(),
+            instructions = instructions,
+            registers = this.environment.registerSet.copy(),
             outputRegisterIndices = this.outputRegisterIndices,
             sentinelTrueValue = this.sentinelTrueValue,
             outputResolver = this.outputResolver

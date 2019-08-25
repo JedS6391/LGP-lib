@@ -3,6 +3,7 @@ package nz.co.jedsimson.lgp.lib.operations
 import nz.co.jedsimson.lgp.core.program.instructions.*
 import nz.co.jedsimson.lgp.core.program.registers.Arguments
 import nz.co.jedsimson.lgp.core.modules.ModuleInformation
+import nz.co.jedsimson.lgp.core.program.registers.RegisterIndex
 
 /**
  * Performs the bitwise not function on a single Double argument.

@@ -3,6 +3,8 @@ package nz.co.jedsimson.lgp.lib.operations
 import nz.co.jedsimson.lgp.core.program.instructions.*
 import nz.co.jedsimson.lgp.core.program.registers.Arguments
 import nz.co.jedsimson.lgp.core.modules.ModuleInformation
+import nz.co.jedsimson.lgp.core.program.registers.RegisterIndex
+import kotlin.math.abs
 
 private const val C_UNDEF = 10e6
 
@@ -32,9 +34,9 @@ class Addition : BinaryOperation<Double>(Addition.Companion::add) {
  * Performs subtraction on two Double arguments.
  */
 class Subtraction : BinaryOperation<Double>(
-        func = { args: Arguments<Double> ->
-            args.get(0) - args.get(1)
-        }
+    function = { args: Arguments<Double> ->
+        args.get(0) - args.get(1)
+    }
 ) {
     override val representation = " - "
 
@@ -51,9 +53,9 @@ class Subtraction : BinaryOperation<Double>(
  * Performs multiplication on two Double arguments.
  */
 class Multiplication : BinaryOperation<Double>(
-        func = { args: Arguments<Double> ->
-            args.get(0) * args.get(1)
-        }
+    function = { args: Arguments<Double> ->
+        args.get(0) * args.get(1)
+    }
 ) {
     override val representation = " * "
 
@@ -70,14 +72,14 @@ class Multiplication : BinaryOperation<Double>(
  * Performs division on two Double arguments.
  */
 class Division : BinaryOperation<Double>(
-        func = { args: Arguments<Double> ->
-            when {
-                // if (r_k ≠ 0) r_i := r_j /r_k
-                args.get(1) != 0.0 -> args.get(0) / args.get(1)
-                // else r_i := r_j + C_undef
-                else -> args.get(0) + C_UNDEF
-            }
+    function = { args: Arguments<Double> ->
+        when {
+            // if (r_k ≠ 0) r_i := r_j /r_k
+            args.get(1) != 0.0 -> args.get(0) / args.get(1)
+            // else r_i := r_j + C_undef
+            else -> args.get(0) + C_UNDEF
         }
+    }
 ) {
     override val representation = " / "
 
@@ -94,14 +96,14 @@ class Division : BinaryOperation<Double>(
  * Performs exponentiation on two Double arguments.
  */
 class Exponent : BinaryOperation<Double>(
-        func = { args: Arguments<Double> ->
-            when {
-                // if (|r_k| <= 10) r_i := |r_j| ^ r_k
-                Math.abs(args.get(1)) <= 10 -> Math.pow(Math.abs(args.get(0)), args.get(1))
-                // else r_i := r_j + r_k + C_undef
-                else -> args.get(0) + args.get(1) + C_UNDEF
-            }
+    function = { args: Arguments<Double> ->
+        when {
+            // if (|r_k| <= 10) r_i := |r_j| ^ r_k
+            abs(args.get(1)) <= 10 -> Math.pow(abs(args.get(0)), args.get(1))
+            // else r_i := r_j + r_k + C_undef
+            else -> args.get(0) + args.get(1) + C_UNDEF
         }
+    }
 ) {
     override val representation = " ^ "
 
