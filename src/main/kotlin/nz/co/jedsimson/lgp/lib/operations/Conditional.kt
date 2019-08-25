@@ -1,8 +1,11 @@
 package nz.co.jedsimson.lgp.lib.operations
 
-import nz.co.jedsimson.lgp.core.program.instructions.*
 import nz.co.jedsimson.lgp.core.program.registers.Arguments
 import nz.co.jedsimson.lgp.core.modules.ModuleInformation
+import nz.co.jedsimson.lgp.core.program.instructions.BinaryOperation
+import nz.co.jedsimson.lgp.core.program.registers.RegisterIndex
+
+abstract class BranchOperation<TData>(func: (Arguments<TData>) -> TData) : BinaryOperation<TData>(func)
 
 /**
  * Performs a branch by comparing two arguments using the greater than operator.
