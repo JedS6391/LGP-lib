@@ -1,9 +1,7 @@
 package nz.co.jedsimson.lgp.lib.base
 
 import nz.co.jedsimson.lgp.core.program.instructions.BaseArity
-import nz.co.jedsimson.lgp.core.program.instructions.BranchOperation
 import nz.co.jedsimson.lgp.core.program.instructions.Instruction
-import nz.co.jedsimson.lgp.core.program.instructions.RegisterIndex
 import nz.co.jedsimson.lgp.core.program.Program
 import nz.co.jedsimson.lgp.core.program.ProgramTranslator
 import nz.co.jedsimson.lgp.core.program.registers.RegisterSet
@@ -11,6 +9,8 @@ import nz.co.jedsimson.lgp.core.program.registers.RegisterType
 import nz.co.jedsimson.lgp.core.modules.ModuleInformation
 import nz.co.jedsimson.lgp.core.program.Output
 import nz.co.jedsimson.lgp.core.program.Outputs
+import nz.co.jedsimson.lgp.core.program.registers.RegisterIndex
+import nz.co.jedsimson.lgp.lib.operations.BranchOperation
 
 /**
  * A collection of built-in functions that can be used to resolve the output of a [BaseProgram] instance.
@@ -50,8 +50,13 @@ object BaseProgramOutputResolvers {
     }
 }
 
+internal enum class BranchResult {
+    NotTaken,
+    Taken
+}
+
 /**
- * A built-in offering of the ``Program`` interface.
+ * A built-in offering of the [Program] abstraction.
  *
  * Instructions of this program are executed in sequence and can be gathered
  * from a single output register.
@@ -60,48 +65,32 @@ object BaseProgramOutputResolvers {
  * @property outputResolver A function that can be used to resolve the programs register contents to an [Output].
  */
 class BaseProgram<TProgram, TOutput : Output<TProgram>>(
-        instructions: List<Instruction<TProgram>>,
-        registerSet: RegisterSet<TProgram>,
-        outputRegisterIndices: List<RegisterIndex>,
-        val sentinelTrueValue: TProgram,
-        val outputResolver: (BaseProgram<TProgram, TOutput>) -> TOutput
-) : Program<TProgram, TOutput>(
-    instructions.toMutableList(),
-    registerSet,
-    outputRegisterIndices
-) {
+    override var instructions: MutableList<Instruction<TProgram>>,
+    override val registers: RegisterSet<TProgram>,
+    override val outputRegisterIndices: List<RegisterIndex>,
+    val sentinelTrueValue: TProgram,
+    val outputResolver: (BaseProgram<TProgram, TOutput>) -> TOutput
+) : Program<TProgram, TOutput>() {
 
     override fun output(): TOutput {
         return this.outputResolver(this)
     }
 
     override fun execute() {
-        var branchResult = true
+        // We consider the last branch as taken when beginning execution.
+        // This effectively means that the `main` function is considered as a single branch
+        // which is always taken.
+        var branchResult = BranchResult.Taken
 
         for (instruction in this.effectiveInstructions) {
-            // Need to take note of the instruction result, as we should skip the
-            // next instruction if the previous was a branch instruction.
-            branchResult = when {
-                branchResult -> {
-                    instruction.execute(this.registers)
-
-                    val output = this.registers[instruction.destination]
-
-                    ((instruction.operation !is BranchOperation<TProgram>) ||
-                            (instruction.operation is BranchOperation<TProgram>
-                                    && output == this.sentinelTrueValue))
-                }
-                else -> {
-                    (instruction.operation !is BranchOperation<TProgram>)
-                }
-            }
+            branchResult = this.determineNextBranchResult(instruction, branchResult)
         }
     }
 
     override fun copy(): BaseProgram<TProgram, TOutput> {
         val copy = BaseProgram(
-            instructions = this.instructions.map(Instruction<TProgram>::copy),
-            registerSet = this.registers.copy(),
+            instructions = this.instructions.map(Instruction<TProgram>::copy).toMutableList(),
+            registers = this.registers.copy(),
             outputRegisterIndices = this.outputRegisterIndices,
             sentinelTrueValue = this.sentinelTrueValue,
             outputResolver = this.outputResolver
@@ -164,9 +153,9 @@ class BaseProgram<TProgram, TOutput : Output<TProgram>>(
 
         this.instructions.map { instruction ->
             if (instruction in effectiveInstructions) {
-                sb.append(instruction.toString() + ";")
+                sb.append("$instruction;")
             } else {
-                sb.append("// " + instruction.toString() + ";")
+                sb.append("// $instruction;")
             }
 
             sb.append('\n')
@@ -178,6 +167,39 @@ class BaseProgram<TProgram, TOutput : Output<TProgram>>(
     override val information = ModuleInformation(
         description = "A simple program that executes instructions sequentially."
     )
+
+    private fun determineNextBranchResult(
+        currentInstruction: Instruction<TProgram>,
+        lastBranchResult: BranchResult
+    ): BranchResult {
+        return when (lastBranchResult) {
+            BranchResult.Taken -> {
+                currentInstruction.execute(this.registers)
+
+                val output = this.registers[currentInstruction.destination]
+
+                // We consider the next branch as needing to be taken when:
+                //   - The current instruction IS NOT a branching operation (i.e. we are still within the context
+                //     of another branch or what equates to the programs `main` function)
+                //   - The current instruction IS a branching operation and the execution result represents *true*
+                val shouldTakeBranch =
+                    currentInstruction.operation !is BranchOperation<TProgram> ||
+                            (currentInstruction.operation is BranchOperation<TProgram> && output == this.sentinelTrueValue)
+
+                if (shouldTakeBranch) BranchResult.Taken else BranchResult.NotTaken
+            }
+            else -> {
+                // The last branch was not taken, so we don't execute, we just need to determine
+                // whether to consider the next branch as needing to be taken (with similar logic
+                // to the branching flow).
+                if (currentInstruction.operation !is BranchOperation<TProgram>) {
+                    BranchResult.Taken
+                } else {
+                    BranchResult.NotTaken
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -254,6 +276,7 @@ class BaseProgramSimplifier<TProgram, TOutput : Output<TProgram>> {
 class BaseProgramTranslator<TProgram, TOutput : Output<TProgram>>(
     private val includeMainFunction: Boolean
 ) : ProgramTranslator<TProgram, TOutput>() {
+
     override val information = ModuleInformation(
         description = "A Program Translator that can translate BaseProgram instances to their equivalent" +
                 " representation in the C programming language."

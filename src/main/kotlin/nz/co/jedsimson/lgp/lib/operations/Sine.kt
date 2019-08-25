@@ -3,12 +3,14 @@ package nz.co.jedsimson.lgp.lib.operations
 import nz.co.jedsimson.lgp.core.program.instructions.*
 import nz.co.jedsimson.lgp.core.program.registers.Arguments
 import nz.co.jedsimson.lgp.core.modules.ModuleInformation
+import nz.co.jedsimson.lgp.core.program.registers.RegisterIndex
+import kotlin.math.sin
 
 /**
  * Performs the sine function on a single Double argument.
  */
 class Sine : UnaryOperation<Double>(
-        func = { args: Arguments<Double> -> Math.sin(args.get(0)) }
+    function = { args: Arguments<Double> -> sin(args.get(0)) }
 ) {
     override val representation: String
         get() = "sin"
