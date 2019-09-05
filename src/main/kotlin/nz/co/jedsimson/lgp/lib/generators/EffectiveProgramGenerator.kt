@@ -20,19 +20,21 @@ internal class EffectiveProgramInstructionGenerator<TProgram, TOutput : Output<T
     InstructionGenerator<TProgram, TOutput, TTarget>(environment) {
 
     private val random = this.environment.randomState
-    private val operationPool: List<Operation<TProgram>> = environment.operations
+    private val operationPool: List<Operation<TProgram>> = this.environment.operations
     private val registers: RegisterSet<TProgram> = this.environment.registerSet.copy()
-    private val registerGenerator: RandomRegisterGenerator<TProgram>
-
-    init {
-        this.registerGenerator = RandomRegisterGenerator(this.environment.randomState, this.registers)
-    }
+    private val registerGenerator = RandomRegisterGenerator(this.environment.randomState, this.registers)
+    private val randomInstructionGenerator = RandomInstructionGenerator(this.environment)
 
     /**
-     * Not implemented -- this implementation should only be used internally by [EffectiveProgramGenerator].
+     * Generates a random instruction
+     *
+     * This implementation does not provide effective registers as an input, and as such can only generate
+     * random instructions.
+     *
+     * @return A random instruction.
      */
     override fun generateInstruction(): Instruction<TProgram> {
-        throw NotImplementedError()
+        return this.randomInstructionGenerator.generateInstruction()
     }
 
     /**
@@ -40,6 +42,7 @@ internal class EffectiveProgramInstructionGenerator<TProgram, TOutput : Output<T
      *
      * @param effectiveRegisters The current set of effective registers.
      * @param branch Determines whether the generated instruction should be a branch instruction.
+     * @return An effective instruction.
      */
     fun generateInstruction(effectiveRegisters: List<RegisterIndex>, branch: Boolean = false): Instruction<TProgram> {
         // If there are no effective registers, then default to the first calculation register.
