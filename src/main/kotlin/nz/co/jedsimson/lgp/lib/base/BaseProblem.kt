@@ -16,7 +16,7 @@ import nz.co.jedsimson.lgp.core.evolution.model.TestResult
 import nz.co.jedsimson.lgp.core.evolution.operators.mutation.macro.MacroMutationOperator
 import nz.co.jedsimson.lgp.core.evolution.operators.mutation.micro.ConstantMutationFunctions
 import nz.co.jedsimson.lgp.core.evolution.operators.mutation.micro.MicroMutationOperator
-import nz.co.jedsimson.lgp.core.evolution.operators.recombination.LinearCrossover
+import nz.co.jedsimson.lgp.core.evolution.operators.recombination.linearCrossover.LinearCrossover
 import nz.co.jedsimson.lgp.core.evolution.operators.selection.TournamentSelection
 import nz.co.jedsimson.lgp.core.evolution.training.DistributedTrainer
 import nz.co.jedsimson.lgp.core.evolution.training.TrainingResult
@@ -86,6 +86,11 @@ data class BaseProblemParameters(
      * The size of tournaments during evolution (default is `20`).
      */
     val tournamentSize: Int = 20,
+
+    /**
+     * The number of offspring to select during each generation (default is `10`).
+     */
+    val numberOfOffspring: Int = 10,
 
     /**
      * The maximum segment length for linear crossover (default is `6`).
@@ -207,7 +212,10 @@ class BaseProblem(val params: BaseProblemParameters) : Problem<Double, Outputs.S
                 )
             },
             CoreModuleType.SelectionOperator to { environment ->
-                TournamentSelection(environment, tournamentSize = params.tournamentSize)
+                TournamentSelection(
+                    environment,
+                    tournamentSize = params.tournamentSize,
+                    numberOfOffspring = params.numberOfOffspring)
             },
             CoreModuleType.RecombinationOperator to { environment ->
                 LinearCrossover(
