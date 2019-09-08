@@ -54,9 +54,7 @@ internal class EffectiveProgramInstructionGenerator<TProgram, TOutput : Output<T
         // Pick a random operation for this instruction.
         val operation = when {
             branch -> {
-                this.random.choice(this.operationPool.filter { operation ->
-                    operation is BranchOperation<TProgram>
-                })
+                this.random.choice(this.operationPool.filterIsInstance<BranchOperation<TProgram>>())
             }
             else -> {
                 this.random.choice(this.operationPool)
