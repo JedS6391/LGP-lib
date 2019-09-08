@@ -3,6 +3,8 @@
 > *A library of implementations for core LGP framework components.*
 
 [![license][license-image]][license-url]
+[![build][travis-image]][travis-url]
+[![maven][maven-image]][maven-url]
 
 ## About
 

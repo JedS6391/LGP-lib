@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'nz.co.jedsimson.lgp'
-version '1.2'
+version '1.3'
 
 repositories {
     mavenCentral()
@@ -13,8 +13,8 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    compile "nz.co.jedsimson.lgp:LGP:5.0"
-    compile "nz.co.jedsimson.lgp:LGP:5.0:sources"
+    compile "nz.co.jedsimson.lgp:LGP:5.1"
+    compile "nz.co.jedsimson.lgp:LGP:5.1:sources"
 
     // For YAML parsing
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
